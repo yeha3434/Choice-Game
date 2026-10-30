@@ -1,4 +1,5 @@
 import './style.css'
+import { createRaceSimulation, type RacerTimeline } from './race-engine'
 import {
   CHARACTERS,
   createCharacterAssignments,
@@ -97,6 +98,11 @@ app.innerHTML = `
           <span class="fairness-badge">每位选手机会相同</span>
         </div>
 
+        <div class="race-controls">
+          <button id="race-go" class="start-race-button" type="button">开始比赛 →</button>
+          <p id="race-status" aria-live="polite">选手已就位，等待发令。</p>
+        </div>
+
         <div class="stadium-scene">
           <div class="start-banner"><span>各位选手，请就位</span></div>
 
@@ -164,8 +170,8 @@ app.innerHTML = `
       <p id="roster-status" class="visually-hidden" aria-live="polite"></p>
 
       <aside class="stage-note" aria-label="当前开发阶段">
-        <span class="stage-note-label">阶段 5</span>
-        <span>先让选手在静态跑道上就位；倒计时和正式跑动将在下一阶段加入。</span>
+        <span class="stage-note-label">阶段 6</span>
+        <span>倒计时后开始赛跑，皇冠跟随领先选手。</span>
       </aside>
     </section>
   </main>
@@ -185,6 +191,8 @@ const characterGrid = getRequiredElement<HTMLDivElement>('character-grid')
 const randomizeCharactersButton = getRequiredElement<HTMLButtonElement>('randomize-characters')
 const raceStadium = getRequiredElement<HTMLElement>('race-stadium')
 const raceLanes = getRequiredElement<HTMLDivElement>('race-lanes')
+const raceGo = getRequiredElement<HTMLButtonElement>('race-go')
+const raceStatus = getRequiredElement<HTMLParagraphElement>('race-status')
 
 let nextOptionId = MIN_RACE_OPTION_COUNT + 1
 let options: RawRaceOption[] = Array.from({ length: MIN_RACE_OPTION_COUNT }, (_, index) => ({
@@ -193,6 +201,8 @@ let options: RawRaceOption[] = Array.from({ length: MIN_RACE_OPTION_COUNT }, (_,
 }))
 let selectedRaceOptions: RaceOption[] = []
 let characterAssignments: CharacterAssignment[] = []
+let raceFrame = 0
+let racing = false
 
 function getRequiredElement<T extends HTMLElement>(id: string): T {
   const element = document.getElementById(id)
@@ -205,6 +215,11 @@ function getRequiredElement<T extends HTMLElement>(id: string): T {
 }
 
 function clearCharacterSelection(): void {
+  cancelAnimationFrame(raceFrame)
+  racing = false
+  raceGo.disabled = false
+  raceStatus.textContent = '选手已就位，等待发令。'
+  raceStadium.dataset.state = 'ready'
   characterSelection.hidden = true
   characterGrid.replaceChildren()
   raceStadium.hidden = true
@@ -515,6 +530,12 @@ function renderRaceLanes(): void {
     const runner = document.createElement('div')
     runner.className = 'lane-runner'
 
+    const crown = document.createElement('span')
+    crown.className = 'leader-crown'
+    crown.textContent = '♛'
+    crown.hidden = true
+    crown.setAttribute('aria-label', '当前领先')
+
     const artwork = document.createElement('div')
     artwork.className = 'lane-character-art'
     artwork.innerHTML = character.svg
@@ -522,7 +543,7 @@ function renderRaceLanes(): void {
     const characterName = document.createElement('span')
     characterName.className = 'lane-character-name'
     characterName.textContent = character.name
-    runner.append(artwork, characterName)
+    runner.append(crown, artwork, characterName)
 
     const distance = document.createElement('div')
     distance.className = 'lane-distance'
@@ -541,6 +562,9 @@ function renderRaceLanes(): void {
 }
 
 function prepareCharacterSelection(raceOptions: readonly RaceOption[]): void {
+  raceStadium.dataset.state = 'ready'
+  raceStatus.textContent = '选手已就位，等待发令。'
+  raceGo.textContent = '开始比赛 →'
   selectedRaceOptions = raceOptions.map((option) => ({ ...option }))
   characterAssignments = createCharacterAssignments(
     selectedRaceOptions.map(({ id }) => id),
@@ -573,6 +597,81 @@ randomizeCharactersButton.addEventListener('click', () => {
   )
   renderCharacterCards()
   rosterStatus.textContent = '已为全部选手重新抽取角色'
+})
+
+function progressAt(racer: RacerTimeline, elapsed: number): number {
+  const frames = racer.keyframes
+  for (let index = 1; index < frames.length; index += 1) {
+    const previous = frames[index - 1]
+    const next = frames[index]
+    if (previous && next && elapsed <= next.atMs) {
+      const fraction = Math.max(0, (elapsed - previous.atMs) / (next.atMs - previous.atMs))
+      return previous.progress + (next.progress - previous.progress) * fraction
+    }
+  }
+  return 1
+}
+
+function setEntryLocked(locked: boolean): void {
+  optionForm.querySelectorAll<HTMLInputElement | HTMLButtonElement>('input, button').forEach((item) => {
+    item.disabled = locked
+  })
+  characterSelection.querySelectorAll<HTMLButtonElement | HTMLSelectElement>('button, select').forEach((item) => {
+    item.disabled = locked
+  })
+  if (!locked) renderOptionRows()
+}
+
+raceGo.addEventListener('click', () => {
+  if (racing || selectedRaceOptions.length < 2) return
+  racing = true
+  raceGo.disabled = true
+  setEntryLocked(true)
+  renderRaceLanes()
+  const simulation = createRaceSimulation(selectedRaceOptions.map(({ id }) => id))
+  const startedAt = performance.now()
+  raceStadium.dataset.state = 'countdown'
+
+  function tick(now: number): void {
+    const elapsed = now - startedAt
+    if (elapsed < 3000) {
+      raceStatus.textContent = String(3 - Math.floor(elapsed / 1000))
+      raceFrame = requestAnimationFrame(tick)
+      return
+    }
+    const raceElapsed = elapsed - 3000
+    raceStadium.dataset.state = 'running'
+    raceStatus.textContent = raceElapsed < 3500 ? '起跑！' : raceElapsed < 13500 ? '比赛途中' : '最后冲刺！'
+    let leaderId = -1
+    let leaderProgress = -1
+    let leaderFinishTime = Infinity
+    for (const racer of simulation.racers) {
+      const progress = progressAt(racer, raceElapsed)
+      const lane = raceLanes.querySelector<HTMLElement>(`[data-option-id="${racer.optionId}"]`)
+      lane?.style.setProperty('--progress', String(progress))
+      if (progress > leaderProgress || (progress === leaderProgress && racer.finishTimeMs < leaderFinishTime)) {
+        leaderProgress = progress
+        leaderId = racer.optionId
+        leaderFinishTime = racer.finishTimeMs
+      }
+    }
+    for (const lane of raceLanes.querySelectorAll<HTMLElement>('.race-lane')) {
+      const crown = lane.querySelector<HTMLElement>('.leader-crown')
+      if (crown) crown.hidden = Number(lane.dataset.optionId) !== leaderId
+    }
+    if (raceElapsed < simulation.durationMs) {
+      raceFrame = requestAnimationFrame(tick)
+      return
+    }
+    racing = false
+    raceStadium.dataset.state = 'finished'
+    const winner = selectedRaceOptions.find(({ id }) => id === simulation.winnerOptionId)
+    raceStatus.textContent = `冲线！${winner?.name ?? '选手'}获得第一名。`
+    raceGo.disabled = false
+    raceGo.textContent = '再看一场 →'
+    setEntryLocked(false)
+  }
+  raceFrame = requestAnimationFrame(tick)
 })
 
 renderOptionRows()
