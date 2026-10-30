@@ -651,6 +651,7 @@ raceGo.addEventListener('click', () => {
     }
     const raceElapsed = elapsed - 3000
     raceStadium.dataset.state = 'running'
+    raceStadium.dataset.phase = raceElapsed >= 13500 ? 'sprint' : 'running'
     raceStatus.textContent = raceElapsed < 3500 ? '起跑！' : raceElapsed < 13500 ? '比赛途中' : '最后冲刺！'
     let leaderId = -1
     let leaderProgress = -1
@@ -694,6 +695,7 @@ raceGo.addEventListener('click', () => {
     }
     racing = false
     raceStadium.dataset.state = 'finished'
+    raceStadium.dataset.phase = 'finished'
     const winner = selectedRaceOptions.find(({ id }) => id === simulation.winnerOptionId)
     raceStatus.textContent = `冲线！${winner?.name ?? '选手'}获得第一名。`
     raceGo.disabled = false

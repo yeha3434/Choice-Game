@@ -953,6 +953,63 @@ h2 {
   to { transform: translateY(-5px) rotate(4deg); }
 }
 
+/* 每个角色共用跑道坐标，但内部肢体动作独立，不能改变比赛进度。 */
+.race-stadium[data-state="running"] .lane-character-art .leg {
+  transform-box: view-box;
+  transform-origin: 90px 125px;
+  animation: leg-step 420ms ease-in-out infinite alternate;
+}
+.race-stadium[data-state="running"] .lane-character-art .leg--right {
+  animation-direction: alternate-reverse;
+}
+.race-stadium[data-state="running"] [data-character-id="long-legs"] .leg {
+  transform-origin: 90px 90px;
+  animation-name: long-step;
+  animation-duration: 380ms;
+}
+.race-stadium[data-state="running"] [data-character-id="big-eye"] .character-svg {
+  animation: eye-head 650ms ease-in-out infinite alternate;
+  transform-origin: center 70%;
+}
+.race-stadium[data-state="running"] [data-character-id="big-eye"] .eye-pupil {
+  animation: eye-peek 3s ease-in-out infinite;
+}
+.race-stadium[data-state="running"] [data-character-id="belly-hero"] .character-svg {
+  animation: belly-bounce 520ms ease-in-out infinite alternate;
+  transform-origin: center 80%;
+}
+.race-stadium[data-state="running"] [data-character-id="calm-potato"] .character-svg {
+  animation: potato-plod 900ms ease-in-out infinite alternate;
+  transform-origin: center 80%;
+}
+.race-stadium[data-phase="sprint"] .lane-character-art .leg,
+.race-lane[data-event="boost"] .lane-character-art .leg {
+  animation-duration: 140ms !important;
+}
+.race-stadium[data-phase="sprint"] .lane-character-art .character-svg {
+  animation: sprint-lean 180ms ease-in-out infinite alternate;
+  transform-origin: center 80%;
+}
+.race-stadium[data-state="running"] .race-lane[data-event="fall"][data-character-id="big-eye"] .lane-character-art { animation: eye-fall 1.4s ease-in-out; }
+.race-stadium[data-state="running"] .race-lane[data-event="fall"][data-character-id="belly-hero"] .lane-character-art { animation: belly-fall 1.4s ease-in-out; }
+.race-stadium[data-state="running"] .race-lane[data-event="fall"][data-character-id="long-legs"] .lane-character-art { animation: legs-fall 1.4s ease-in-out; }
+.race-stadium[data-state="running"] .race-lane[data-event="fall"][data-character-id="long-legs"] .leg { animation: legs-knot 1.4s ease-in-out; }
+.race-stadium[data-state="running"] .race-lane[data-event="fall"][data-character-id="calm-potato"] .lane-character-art { animation: potato-roll 1.4s ease-in-out; }
+.race-stadium[data-state="running"] .race-lane[data-event="boost"][data-character-id="calm-potato"] .leg { animation-duration: 90ms !important; }
+
+@keyframes leg-step { from { transform: rotate(-13deg); } to { transform: rotate(13deg); } }
+@keyframes long-step { from { transform: rotate(-24deg); } to { transform: rotate(24deg); } }
+@keyframes eye-head { from { transform: rotate(-6deg); } to { transform: rotate(7deg); } }
+@keyframes eye-peek { 0%, 70%, 100% { transform: translateX(0); } 80%, 90% { transform: translateX(7px); } }
+@keyframes belly-bounce { from { transform: scaleY(.9) scaleX(1.06); } to { transform: scaleY(1.08) scaleX(.96) translateY(-4px); } }
+@keyframes potato-plod { from { transform: rotate(-3deg); } to { transform: rotate(4deg); } }
+@keyframes sprint-lean { from { transform: rotate(12deg) translateX(2px); } to { transform: rotate(18deg) translateX(5px); } }
+@keyframes eye-fall { 0%, 100% { transform: none; } 35%, 65% { transform: translateY(16px) rotate(88deg); } }
+@keyframes belly-fall { 0%, 100% { transform: none; } 30% { transform: translateY(17px) scaleY(.65) scaleX(1.25); } 55% { transform: translateY(-12px) scaleY(1.15); } 75% { transform: translateY(10px) scaleY(.8); } }
+@keyframes legs-fall { 0%, 100% { transform: none; } 35%, 65% { transform: translateY(13px) rotate(55deg); } }
+@keyframes legs-knot { 0%, 100% { transform: rotate(0); } 35%, 65% { transform: rotate(45deg); } }
+@keyframes potato-roll { 0%, 100% { transform: rotate(0); } 80% { transform: rotate(720deg) translateY(5px); } }
+
 @keyframes crown-wobble {
   to { transform: rotate(12deg); }
 }
@@ -1326,5 +1383,20 @@ h2 {
   .race-lane[data-event] .lane-character-art,
   .leader-crown {
     animation: none;
+  }
+
+  .race-stadium[data-state="running"] .lane-character-art .character-svg,
+  .race-stadium[data-state="running"] .lane-character-art .leg,
+  .race-stadium[data-state="running"] .lane-character-art .eye-pupil {
+    animation: none !important;
+  }
+
+  .race-stadium[data-state="running"] .race-lane[data-event="fall"] .lane-character-art {
+    animation: none !important;
+    transform: translateY(10px) rotate(55deg);
+  }
+  .race-stadium[data-state="running"] .race-lane[data-event="boost"] .lane-character-art {
+    animation: none !important;
+    transform: rotate(12deg);
   }
 }
