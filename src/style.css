@@ -51,6 +51,26 @@ select:focus-visible {
     linear-gradient(150deg, #fff9ed 0%, #ffe7bc 100%);
 }
 
+.sound-controls {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  width: min(100%, 900px);
+  margin: 0 auto 14px;
+}
+.sound-controls button, .result-actions button {
+  min-height: 42px;
+  padding: 8px 14px;
+  border: 2px solid var(--ink);
+  border-radius: 13px;
+  background: var(--paper);
+  font-weight: 850;
+  cursor: pointer;
+}
+.sound-controls button[aria-pressed="true"] { background: #d6efc9; }
+
 .app-shell::before,
 .app-shell::after {
   position: absolute;
@@ -650,6 +670,27 @@ h2 {
   display: none;
 }
 
+.race-result {
+  margin-top: 20px;
+  padding: 22px;
+  border: 3px solid var(--ink);
+  border-radius: 20px 14px 22px 16px;
+  background: #ffeaa0;
+  box-shadow: 5px 6px 0 var(--orange);
+  overflow-wrap: anywhere;
+}
+.race-result[hidden], .result-actions button[hidden], #race-go[hidden] { display: none; }
+.result-kicker { margin: 0 0 6px; color: var(--orange-dark); font-size: .8rem; font-weight: 900; }
+.race-result h3 { font-size: clamp(1.6rem, 4vw, 2.7rem); }
+#result-confirmation { color: #315f3b; font-weight: 900; }
+.result-ranking { padding-left: 1.4em; line-height: 1.8; font-weight: 700; list-style: none; }
+.result-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.result-actions button:first-child { background: var(--orange); color: #fff; }
+.ribbon-broken .finish-ribbon { transform: rotate(25deg) translate(8px, -5px); background: #ffd5c5; }
+.race-stadium[data-state="finished"] .race-lane[data-result="winner"] .lane-character-art { animation: winner-dance 450ms ease-in-out infinite alternate; }
+.race-stadium[data-state="finished"] .race-lane[data-result="other"] .lane-character-art { transform: rotate(-12deg); }
+@keyframes winner-dance { from { transform: rotate(-12deg) translateY(0); } to { transform: rotate(12deg) translateY(-10px); } }
+
 .stadium-heading {
   display: flex;
   align-items: end;
@@ -1061,6 +1102,11 @@ h2 {
   transform: rotate(-6deg);
 }
 
+.race-stadium[data-state="running"] .lane-distance {
+  animation: track-drift 700ms linear infinite;
+}
+@keyframes track-drift { from { transform: translateX(0); } to { transform: translateX(-25px); } }
+
 .finish-line {
   position: absolute;
   z-index: 5;
@@ -1399,4 +1445,6 @@ h2 {
     animation: none !important;
     transform: rotate(12deg);
   }
+  .race-stadium[data-state="finished"] .race-lane[data-result="winner"] .lane-character-art { animation: none; }
+  .race-stadium[data-state="running"] .lane-distance { animation: none; }
 }

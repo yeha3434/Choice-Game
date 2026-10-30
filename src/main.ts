@@ -1,4 +1,5 @@
 import './style.css'
+import { GameAudio } from './audio'
 import { createRaceSimulation, type RacerTimeline } from './race-engine'
 import { createRaceEvents, eventTime } from './race-events'
 import {
@@ -28,6 +29,10 @@ if (!app) {
 
 app.innerHTML = `
   <main class="app-shell">
+    <div class="sound-controls" aria-label="声音设置">
+      <button id="music-toggle" type="button"></button>
+      <button id="effects-toggle" type="button"></button>
+    </div>
     <header class="hero" aria-labelledby="page-title">
       <div class="hero-copy">
         <p class="hero-kicker">一场不太正规的社区运动会</p>
@@ -166,14 +171,21 @@ app.innerHTML = `
             </div>
           </div>
         </div>
+        <section id="race-result" class="race-result" aria-labelledby="result-title" hidden>
+          <p class="result-kicker">本届运动会冠军</p>
+          <h3 id="result-title"></h3>
+          <p id="result-confirmation" aria-live="polite"></p>
+          <ol id="result-ranking" class="result-ranking"></ol>
+          <div class="result-actions">
+            <button id="confirm-result" type="button">就这么办</button>
+            <button id="replay-result" type="button">不服，再来一局</button>
+            <button id="edit-options" type="button">修改选项</button>
+          </div>
+        </section>
       </section>
 
       <p id="roster-status" class="visually-hidden" aria-live="polite"></p>
 
-      <aside class="stage-note" aria-label="当前开发阶段">
-        <span class="stage-note-label">阶段 6</span>
-        <span>倒计时后开始赛跑，皇冠跟随领先选手。</span>
-      </aside>
     </section>
   </main>
 `
@@ -194,6 +206,27 @@ const raceStadium = getRequiredElement<HTMLElement>('race-stadium')
 const raceLanes = getRequiredElement<HTMLDivElement>('race-lanes')
 const raceGo = getRequiredElement<HTMLButtonElement>('race-go')
 const raceStatus = getRequiredElement<HTMLParagraphElement>('race-status')
+const raceResult = getRequiredElement<HTMLElement>('race-result')
+const resultTitle = getRequiredElement<HTMLHeadingElement>('result-title')
+const resultRanking = getRequiredElement<HTMLOListElement>('result-ranking')
+const resultConfirmation = getRequiredElement<HTMLParagraphElement>('result-confirmation')
+const confirmResult = getRequiredElement<HTMLButtonElement>('confirm-result')
+const replayResult = getRequiredElement<HTMLButtonElement>('replay-result')
+const editOptions = getRequiredElement<HTMLButtonElement>('edit-options')
+const musicToggle = getRequiredElement<HTMLButtonElement>('music-toggle')
+const effectsToggle = getRequiredElement<HTMLButtonElement>('effects-toggle')
+const audio = new GameAudio()
+
+function updateSoundControls(): void {
+  musicToggle.textContent = `音乐：${audio.music ? '开' : '关'}`
+  effectsToggle.textContent = `音效：${audio.effects ? '开' : '关'}`
+  musicToggle.setAttribute('aria-pressed', String(audio.music))
+  effectsToggle.setAttribute('aria-pressed', String(audio.effects))
+}
+musicToggle.addEventListener('click', () => { audio.setMusic(!audio.music); void audio.unlock(); updateSoundControls() })
+effectsToggle.addEventListener('click', () => { audio.setEffects(!audio.effects); void audio.unlock(); updateSoundControls() })
+document.addEventListener('visibilitychange', () => { if (document.hidden) audio.stopMusic(); else audio.resumeMusic() })
+updateSoundControls()
 
 let nextOptionId = MIN_RACE_OPTION_COUNT + 1
 let options: RawRaceOption[] = Array.from({ length: MIN_RACE_OPTION_COUNT }, (_, index) => ({
@@ -221,6 +254,8 @@ function clearCharacterSelection(): void {
   raceGo.disabled = false
   raceStatus.textContent = '选手已就位，等待发令。'
   raceStadium.dataset.state = 'ready'
+  raceResult.hidden = true
+  audio.setMode('menu')
   characterSelection.hidden = true
   characterGrid.replaceChildren()
   raceStadium.hidden = true
@@ -634,6 +669,13 @@ function setEntryLocked(locked: boolean): void {
 raceGo.addEventListener('click', () => {
   if (racing || selectedRaceOptions.length < 2) return
   racing = true
+  void audio.unlock()
+  audio.setMode('race')
+  raceStadium.classList.remove('ribbon-broken')
+  raceResult.hidden = true
+  resultConfirmation.textContent = ''
+  confirmResult.hidden = false
+  replayResult.hidden = false
   raceGo.disabled = true
   setEntryLocked(true)
   renderRaceLanes()
@@ -641,17 +683,28 @@ raceGo.addEventListener('click', () => {
   const events = createRaceEvents(selectedRaceOptions.map(({ id }) => id))
   const startedAt = performance.now()
   raceStadium.dataset.state = 'countdown'
+  let lastCountdown = 0
+  let lastLeader = -1
+  let previousPhase = ''
+  let winnerCrossed = false
 
   function tick(now: number): void {
     const elapsed = now - startedAt
     if (elapsed < 3000) {
-      raceStatus.textContent = String(3 - Math.floor(elapsed / 1000))
+      const count = 3 - Math.floor(elapsed / 1000)
+      if (count !== lastCountdown) { audio.play('count'); lastCountdown = count }
+      raceStatus.textContent = String(count)
       raceFrame = requestAnimationFrame(tick)
       return
     }
     const raceElapsed = elapsed - 3000
     raceStadium.dataset.state = 'running'
     raceStadium.dataset.phase = raceElapsed >= 13500 ? 'sprint' : 'running'
+    if (previousPhase !== raceStadium.dataset.phase) {
+      previousPhase = raceStadium.dataset.phase
+      if (previousPhase === 'running') audio.play('start')
+      else { audio.setMode('sprint'); audio.play('sprint') }
+    }
     raceStatus.textContent = raceElapsed < 3500 ? '起跑！' : raceElapsed < 13500 ? '比赛途中' : '最后冲刺！'
     let leaderId = -1
     let leaderProgress = -1
@@ -663,6 +716,8 @@ raceGo.addEventListener('click', () => {
       lane?.style.setProperty('--progress', String(progress))
       if (lane) {
         const eventChanged = lane.dataset.event !== (event?.type ?? '')
+        if (eventChanged && event?.type === 'boost') audio.play('boost')
+        if (eventChanged && event?.type === 'fall') audio.play('fall')
         lane.dataset.event = event?.type ?? ''
         const bubble = lane.querySelector<HTMLElement>('.event-bubble')
         const obstacle = lane.querySelector<HTMLElement>('.event-obstacle')
@@ -685,6 +740,12 @@ raceGo.addEventListener('click', () => {
         leaderFinishTime = racer.finishTimeMs
       }
     }
+    if (lastLeader !== -1 && lastLeader !== leaderId) audio.play('lead')
+    lastLeader = leaderId
+    if (!winnerCrossed && raceElapsed >= (simulation.racers.find((racer) => racer.optionId === simulation.winnerOptionId)?.finishTimeMs ?? Infinity)) {
+      winnerCrossed = true
+      raceStadium.classList.add('ribbon-broken')
+    }
     for (const lane of raceLanes.querySelectorAll<HTMLElement>('.race-lane')) {
       const crown = lane.querySelector<HTMLElement>('.leader-crown')
       if (crown) crown.hidden = Number(lane.dataset.optionId) !== leaderId
@@ -698,11 +759,37 @@ raceGo.addEventListener('click', () => {
     raceStadium.dataset.phase = 'finished'
     const winner = selectedRaceOptions.find(({ id }) => id === simulation.winnerOptionId)
     raceStatus.textContent = `冲线！${winner?.name ?? '选手'}获得第一名。`
+    audio.setMode('menu')
+    audio.play('win')
+    resultTitle.textContent = winner?.name ?? '选手'
+    resultRanking.replaceChildren(...simulation.finishOrder.map((id, index) => {
+      const item = document.createElement('li')
+      const option = selectedRaceOptions.find((entry) => entry.id === id)
+      item.textContent = `第 ${index + 1} 名：${option?.name ?? '选手'}`
+      return item
+    }))
+    raceResult.hidden = false
+    for (const lane of raceLanes.querySelectorAll<HTMLElement>('.race-lane')) lane.dataset.result = Number(lane.dataset.optionId) === simulation.winnerOptionId ? 'winner' : 'other'
     raceGo.disabled = false
     raceGo.textContent = '再看一场 →'
     setEntryLocked(false)
   }
   raceFrame = requestAnimationFrame(tick)
+})
+
+confirmResult.addEventListener('click', () => {
+  resultConfirmation.textContent = '决定已确认！'
+  confirmResult.hidden = true
+  replayResult.hidden = true
+  raceGo.hidden = true
+})
+replayResult.addEventListener('click', () => { raceStadium.classList.remove('ribbon-broken'); raceGo.click() })
+editOptions.addEventListener('click', () => {
+  clearCharacterSelection()
+  raceStadium.classList.remove('ribbon-broken')
+  raceGo.hidden = false
+  optionList.querySelector<HTMLInputElement>('input')?.focus()
+  optionForm.scrollIntoView({ behavior: 'smooth', block: 'start' })
 })
 
 renderOptionRows()
