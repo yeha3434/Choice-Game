@@ -18,7 +18,7 @@ test('空白项会被忽略，两个有效选项可以整理成参赛名单', as
   await page.goto('/')
 
   const inputs = page.getByTestId('option-input')
-  const startButton = page.getByRole('button', { name: '准备开赛' })
+  const startButton = page.getByRole('button', { name: '抽取角色' })
 
   await expect(startButton).toBeDisabled()
   await expect(page.getByText('请填写至少两个有效选项，空白项不会参赛。')).toBeVisible()
@@ -35,10 +35,12 @@ test('空白项会被忽略，两个有效选项可以整理成参赛名单', as
   await expect(startButton).toBeEnabled()
   await startButton.click()
 
-  const preparedRoster = page.locator('#prepared-roster')
-  await expect(preparedRoster).toBeVisible()
-  await expect(preparedRoster.getByText('2 名有效选手已就位，每位选手机会相同。')).toBeVisible()
-  await expect(preparedRoster.locator('.prepared-name')).toHaveText(['火锅', '散步'])
+  const characterSelection = page.locator('#character-selection')
+  await expect(characterSelection).toBeVisible()
+  await expect(
+    characterSelection.getByText('2 名选手已随机分配不重复角色；角色不会影响获胜机会。'),
+  ).toBeVisible()
+  await expect(characterSelection.locator('.racer-option-name')).toHaveText(['火锅', '散步'])
   expect(consoleErrors).toEqual([])
 
   await page.screenshot({
@@ -53,7 +55,7 @@ test('重复和超长选项会给出明确提示，特殊字符只作为文字�
   await page.goto('/')
 
   const inputs = page.getByTestId('option-input')
-  const startButton = page.getByRole('button', { name: '准备开赛' })
+  const startButton = page.getByRole('button', { name: '抽取角色' })
 
   await inputs.nth(0).fill('火锅')
   await inputs.nth(1).fill(' 火锅 ')
@@ -81,9 +83,9 @@ test('重复和超长选项会给出明确提示，特殊字符只作为文字�
   await expect(startButton).toBeEnabled()
   await startButton.click()
 
-  const preparedRoster = page.locator('#prepared-roster')
-  await expect(preparedRoster.locator('.prepared-name').nth(0)).toHaveText(specialName)
-  await expect(preparedRoster.locator('img')).toHaveCount(0)
+  const characterSelection = page.locator('#character-selection')
+  await expect(characterSelection.locator('.racer-option-name').nth(0)).toHaveText(specialName)
+  await expect(characterSelection.locator('img')).toHaveCount(0)
   const injected = await page.evaluate(() => (window as Window & { x?: number }).x ?? 0)
   expect(injected).toBe(0)
   expect(consoleErrors).toEqual([])
@@ -100,10 +102,10 @@ test('360px 手机宽度能显示 40 字符选项且不会横向溢出', async (
 
   await inputs.nth(0).fill(longName)
   await inputs.nth(1).fill('散步')
-  await page.getByRole('button', { name: '准备开赛' }).click()
+  await page.getByRole('button', { name: '抽取角色' }).click()
 
-  await expect(page.locator('#prepared-roster')).toBeVisible()
-  await expect(page.locator('.prepared-name').nth(0)).toHaveText(longName)
+  await expect(page.locator('#character-selection')).toBeVisible()
+  await expect(page.locator('.racer-option-name').nth(0)).toHaveText(longName)
 
   const hasHorizontalOverflow = await page.evaluate(
     () => document.documentElement.scrollWidth > document.documentElement.clientWidth,

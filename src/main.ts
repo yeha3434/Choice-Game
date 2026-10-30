@@ -1,5 +1,13 @@
 import './style.css'
 import {
+  CHARACTERS,
+  createCharacterAssignments,
+  getCharacter,
+  isCharacterId,
+  selectCharacter,
+  type CharacterAssignment,
+} from './characters'
+import {
   MAX_OPTION_NAME_LENGTH,
   MAX_RACE_OPTION_COUNT,
   MIN_RACE_OPTION_COUNT,
@@ -21,7 +29,11 @@ app.innerHTML = `
     <header class="hero" aria-labelledby="page-title">
       <div class="hero-copy">
         <p class="hero-kicker">一场不太正规的社区运动会</p>
-        <h1 id="page-title">Indecision Games</h1>
+        <h1 id="page-title" class="site-title" aria-label="选什么">
+          <span class="title-glyph title-glyph--one" aria-hidden="true">选</span>
+          <span class="title-glyph title-glyph--two" aria-hidden="true">什</span>
+          <span class="title-glyph title-glyph--three" aria-hidden="true">么</span>
+        </h1>
         <p class="hero-intro">把你的选项报上名，让他们自己跑个明白。</p>
       </div>
       <div class="meet-stamp" aria-hidden="true">
@@ -56,23 +68,31 @@ app.innerHTML = `
         </div>
 
         <button id="start-race" class="start-race-button" type="submit" disabled>
-          <span>准备开赛</span>
+          <span>抽取角色</span>
           <span aria-hidden="true">→</span>
         </button>
       </form>
 
-      <section id="prepared-roster" class="prepared-roster" tabindex="-1" hidden>
-        <p class="prepared-kicker">报名表检查通过</p>
-        <h3>选手们已在检录处排好队</h3>
-        <p id="prepared-summary" class="prepared-summary"></p>
-        <ol id="prepared-list" class="prepared-list"></ol>
+      <section id="character-selection" class="character-selection" tabindex="-1" hidden>
+        <div class="character-selection-heading">
+          <div>
+            <p class="prepared-kicker">角色抽签处</p>
+            <h3>选手造型已出炉</h3>
+          </div>
+          <button id="randomize-characters" class="randomize-button" type="button">
+            ↻ 重新抽签
+          </button>
+        </div>
+        <p id="character-summary" class="character-summary"></p>
+        <p class="swap-hint">手动选择已占用的角色时，两名选手会交换角色。</p>
+        <div id="character-grid" class="character-grid"></div>
       </section>
 
       <p id="roster-status" class="visually-hidden" aria-live="polite"></p>
 
       <aside class="stage-note" aria-label="当前开发阶段">
-        <span class="stage-note-label">阶段 2</span>
-        <span>先把报名表检查清楚；角色分配和正式发令将在后续阶段加入。</span>
+        <span class="stage-note-label">阶段 3</span>
+        <span>角色只改变造型和动作，不会影响任何选项的获胜机会。</span>
       </aside>
     </section>
   </main>
@@ -86,15 +106,18 @@ const rosterCount = getRequiredElement<HTMLOutputElement>('roster-count')
 const rosterStatus = getRequiredElement<HTMLParagraphElement>('roster-status')
 const validationSummary = getRequiredElement<HTMLDivElement>('validation-summary')
 const validationMessage = getRequiredElement<HTMLParagraphElement>('validation-message')
-const preparedRoster = getRequiredElement<HTMLElement>('prepared-roster')
-const preparedSummary = getRequiredElement<HTMLParagraphElement>('prepared-summary')
-const preparedList = getRequiredElement<HTMLOListElement>('prepared-list')
+const characterSelection = getRequiredElement<HTMLElement>('character-selection')
+const characterSummary = getRequiredElement<HTMLParagraphElement>('character-summary')
+const characterGrid = getRequiredElement<HTMLDivElement>('character-grid')
+const randomizeCharactersButton = getRequiredElement<HTMLButtonElement>('randomize-characters')
 
 let nextOptionId = MIN_RACE_OPTION_COUNT + 1
 let options: RawRaceOption[] = Array.from({ length: MIN_RACE_OPTION_COUNT }, (_, index) => ({
   id: index + 1,
   value: '',
 }))
+let selectedRaceOptions: RaceOption[] = []
+let characterAssignments: CharacterAssignment[] = []
 
 function getRequiredElement<T extends HTMLElement>(id: string): T {
   const element = document.getElementById(id)
@@ -106,9 +129,11 @@ function getRequiredElement<T extends HTMLElement>(id: string): T {
   return element as T
 }
 
-function clearPreparedRoster(): void {
-  preparedRoster.hidden = true
-  preparedList.replaceChildren()
+function clearCharacterSelection(): void {
+  characterSelection.hidden = true
+  characterGrid.replaceChildren()
+  selectedRaceOptions = []
+  characterAssignments = []
 }
 
 function renderOptionRows(focusOptionId?: number): void {
@@ -157,7 +182,7 @@ function renderOptionRows(focusOptionId?: number): void {
 
     input.addEventListener('input', () => {
       option.value = input.value
-      clearPreparedRoster()
+      clearCharacterSelection()
       updateValidation()
     })
 
@@ -242,7 +267,7 @@ function addOption(): void {
 
   nextOptionId += 1
   options = [...options, newOption]
-  clearPreparedRoster()
+  clearCharacterSelection()
   rosterStatus.textContent = `已添加第 ${options.length} 名选手`
   renderOptionRows(newOption.id)
 }
@@ -259,31 +284,132 @@ function removeOption(optionId: number): void {
   }
 
   options = options.filter((option) => option.id !== optionId)
-  clearPreparedRoster()
+  clearCharacterSelection()
   rosterStatus.textContent = `已删除第 ${removedPosition + 1} 名选手`
   renderOptionRows()
 }
 
-function renderPreparedRoster(raceOptions: readonly RaceOption[]): void {
+function renderCharacterCards(focusOptionId?: number): void {
   const fragment = document.createDocumentFragment()
 
-  raceOptions.forEach((option, index) => {
-    const item = document.createElement('li')
-    const number = document.createElement('span')
-    const name = document.createElement('span')
+  selectedRaceOptions.forEach((option, index) => {
+    const assignment = characterAssignments.find(({ optionId }) => optionId === option.id)
 
-    number.className = 'prepared-number'
+    if (!assignment) {
+      throw new Error(`找不到选手 ${option.id} 的角色`)
+    }
+
+    const character = getCharacter(assignment.characterId)
+    const card = document.createElement('article')
+    card.className = 'character-card'
+    card.dataset.testid = 'character-card'
+    card.dataset.optionId = String(option.id)
+    card.dataset.characterId = character.id
+
+    const cardHeading = document.createElement('div')
+    cardHeading.className = 'character-card-heading'
+
+    const identity = document.createElement('div')
+    identity.className = 'racer-identity'
+
+    const number = document.createElement('span')
+    number.className = 'racer-number'
     number.textContent = String(index + 1).padStart(2, '0')
-    name.className = 'prepared-name'
-    name.textContent = option.name
-    item.append(number, name)
-    fragment.append(item)
+
+    const optionName = document.createElement('h4')
+    optionName.className = 'racer-option-name'
+    optionName.title = option.name
+    optionName.textContent = option.name
+
+    identity.append(number, optionName)
+
+    const badge = document.createElement('span')
+    badge.className = 'character-badge'
+    badge.textContent = '抽签角色'
+    cardHeading.append(identity, badge)
+
+    const cardBody = document.createElement('div')
+    cardBody.className = 'character-card-body'
+
+    const artwork = document.createElement('div')
+    artwork.className = 'character-artwork'
+    artwork.dataset.testid = 'character-artwork'
+    artwork.innerHTML = character.svg
+
+    const copy = document.createElement('div')
+    copy.className = 'character-copy'
+
+    const characterName = document.createElement('p')
+    characterName.className = 'character-name'
+    characterName.textContent = character.name
+
+    const tagline = document.createElement('p')
+    tagline.className = 'character-tagline'
+    tagline.textContent = character.tagline
+
+    const selectLabel = document.createElement('label')
+    selectLabel.className = 'character-select-label'
+    selectLabel.textContent = '手动换角色'
+
+    const select = document.createElement('select')
+    select.className = 'character-select'
+    select.dataset.testid = 'character-select'
+    select.setAttribute('aria-label', `为“${option.name}”选择角色`)
+
+    for (const availableCharacter of CHARACTERS) {
+      const selectOption = document.createElement('option')
+      const isUsedByAnother = characterAssignments.some(
+        (otherAssignment) =>
+          otherAssignment.optionId !== option.id &&
+          otherAssignment.characterId === availableCharacter.id,
+      )
+
+      selectOption.value = availableCharacter.id
+      selectOption.selected = availableCharacter.id === character.id
+      selectOption.textContent = isUsedByAnother
+        ? `${availableCharacter.name}（交换）`
+        : availableCharacter.name
+      select.append(selectOption)
+    }
+
+    select.addEventListener('change', () => {
+      if (!isCharacterId(select.value)) {
+        return
+      }
+
+      characterAssignments = selectCharacter(characterAssignments, option.id, select.value)
+      const selectedCharacter = getCharacter(select.value)
+      rosterStatus.textContent = `${option.name} 已换成${selectedCharacter.name}`
+      renderCharacterCards(option.id)
+    })
+
+    selectLabel.append(select)
+    copy.append(characterName, tagline, selectLabel)
+    cardBody.append(artwork, copy)
+    card.append(cardHeading, cardBody)
+    fragment.append(card)
   })
 
-  preparedList.replaceChildren(fragment)
-  preparedSummary.textContent = `${raceOptions.length} 名有效选手已就位，每位选手机会相同。`
-  preparedRoster.hidden = false
-  preparedRoster.focus()
+  characterGrid.replaceChildren(fragment)
+
+  if (focusOptionId !== undefined) {
+    characterGrid
+      .querySelector<HTMLSelectElement>(
+        `.character-card[data-option-id="${focusOptionId}"] .character-select`,
+      )
+      ?.focus()
+  }
+}
+
+function prepareCharacterSelection(raceOptions: readonly RaceOption[]): void {
+  selectedRaceOptions = raceOptions.map((option) => ({ ...option }))
+  characterAssignments = createCharacterAssignments(
+    selectedRaceOptions.map(({ id }) => id),
+  )
+  characterSummary.textContent = `${selectedRaceOptions.length} 名选手已随机分配不重复角色；角色不会影响获胜机会。`
+  renderCharacterCards()
+  characterSelection.hidden = false
+  characterSelection.focus()
 }
 
 addOptionButton.addEventListener('click', addOption)
@@ -295,7 +421,18 @@ optionForm.addEventListener('submit', (event) => {
     return
   }
 
-  renderPreparedRoster(validation.options)
+  prepareCharacterSelection(validation.options)
+})
+randomizeCharactersButton.addEventListener('click', () => {
+  if (selectedRaceOptions.length === 0) {
+    return
+  }
+
+  characterAssignments = createCharacterAssignments(
+    selectedRaceOptions.map(({ id }) => id),
+  )
+  renderCharacterCards()
+  rosterStatus.textContent = '已为全部选手重新抽取角色'
 })
 
 renderOptionRows()
