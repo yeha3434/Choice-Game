@@ -22,7 +22,7 @@ test('默认两名选手，并能在两到四名之间增加和删除', async ({
   const removeButtons = page.locator('[data-action="remove"]')
   const addButton = page.getByRole('button', { name: '添加选手' })
 
-  await expect(page.getByRole('heading', { name: '纠结运动会' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Indecision Games' })).toBeVisible()
   await expect(rows).toHaveCount(2)
   await expect(removeButtons).toHaveCount(2)
   await expect(removeButtons.nth(0)).toBeDisabled()
