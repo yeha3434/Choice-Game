@@ -1,0 +1,17 @@
+node_modules/
+dist/
+coverage/
+.vitest/
+test-results/
+playwright-report/
+blob-report/
+work/
+
+.env
+.env.*
+!.env.example
+*.local
+
+.DS_Store
+Thumbs.db
+desktop.ini
