@@ -1,9 +1,16 @@
 :root {
-  color: #442518;
-  background: #fff3df;
+  color: #432519;
+  background: #fff1d7;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
+  --ink: #432519;
+  --muted-ink: #774b38;
+  --paper: #fffdf6;
+  --orange: #ef7842;
+  --orange-dark: #bc472f;
+  --yellow: #ffe169;
+  --track: #e9794a;
 }
 
 * {
@@ -21,71 +28,383 @@ input {
   font: inherit;
 }
 
-.scaffold-shell {
-  display: grid;
+button {
+  color: inherit;
+}
+
+button:focus-visible,
+input:focus-visible {
+  outline: 4px solid rgb(38 116 134 / 30%);
+  outline-offset: 3px;
+}
+
+.app-shell {
+  position: relative;
   min-height: 100vh;
-  place-items: center;
-  padding: 24px;
+  overflow: hidden;
+  padding: clamp(28px, 6vw, 72px) 20px 80px;
   background:
-    radial-gradient(circle at 20% 15%, rgb(255 196 111 / 48%), transparent 34%),
-    linear-gradient(145deg, #fff8eb, #ffe3b3);
+    radial-gradient(circle at 14% 10%, rgb(255 200 112 / 60%), transparent 29%),
+    radial-gradient(circle at 88% 34%, rgb(245 135 80 / 22%), transparent 26%),
+    linear-gradient(150deg, #fff9ed 0%, #ffe7bc 100%);
 }
 
-.scaffold-card {
-  width: min(100%, 680px);
-  padding: clamp(28px, 7vw, 64px);
-  border: 3px solid #442518;
-  border-radius: 34px 24px 38px 28px;
-  background: rgb(255 253 247 / 88%);
-  box-shadow: 10px 12px 0 #ef8e4d;
-  transform: rotate(-0.6deg);
+.app-shell::before,
+.app-shell::after {
+  position: absolute;
+  z-index: 0;
+  right: -3vw;
+  left: -3vw;
+  height: 18px;
+  border-block: 3px solid rgb(255 253 246 / 88%);
+  background: var(--track);
+  content: "";
+  transform: rotate(-2deg);
 }
 
-.scaffold-kicker {
-  margin: 0 0 10px;
-  color: #c24b2f;
-  font-size: 0.9rem;
-  font-weight: 800;
-  letter-spacing: 0.16em;
+.app-shell::before {
+  top: 26px;
+}
+
+.app-shell::after {
+  bottom: 28px;
+  transform: rotate(1.2deg);
+}
+
+.hero,
+.signup-card {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 900px);
+  margin-inline: auto;
+}
+
+.hero {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 28px;
+  margin-bottom: 30px;
+}
+
+.hero-kicker,
+.card-kicker {
+  margin: 0 0 8px;
+  color: var(--orange-dark);
+  font-size: 0.82rem;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+h1,
+h2,
+p {
+  text-wrap: pretty;
 }
 
 h1 {
   margin: 0;
-  font-size: clamp(2rem, 7vw, 4rem);
-  line-height: 1.02;
+  font-size: clamp(3rem, 9vw, 6.8rem);
+  letter-spacing: -0.065em;
+  line-height: 0.92;
 }
 
-.scaffold-copy {
-  max-width: 48ch;
-  margin: 22px 0 30px;
-  color: #714332;
-  font-size: clamp(1rem, 2.4vw, 1.2rem);
-  line-height: 1.7;
+.hero-intro {
+  max-width: 34ch;
+  margin: 18px 0 0;
+  color: var(--muted-ink);
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  line-height: 1.65;
 }
 
-.stage-badge {
-  display: inline-flex;
-  padding: 8px 14px;
-  border: 2px solid currentColor;
-  border-radius: 999px;
-  background: #ffe06f;
+.meet-stamp {
+  display: grid;
+  flex: 0 0 auto;
+  width: 118px;
+  height: 118px;
+  place-content: center;
+  border: 3px solid var(--ink);
+  border-radius: 51% 44% 48% 42%;
+  background: var(--yellow);
+  box-shadow: 7px 8px 0 var(--orange);
+  text-align: center;
+  transform: rotate(5deg);
+}
+
+.meet-stamp-number,
+.meet-stamp-label {
+  display: block;
+}
+
+.meet-stamp-number {
+  font-size: 1.8rem;
+  font-weight: 950;
+  line-height: 1;
+}
+
+.meet-stamp-label {
+  margin-top: 6px;
+  font-size: 0.82rem;
   font-weight: 800;
 }
 
-@media (max-width: 420px) {
-  .scaffold-shell {
-    padding: 18px;
+.signup-card {
+  padding: clamp(24px, 5vw, 48px);
+  border: 3px solid var(--ink);
+  border-radius: 34px 24px 40px 28px;
+  background: rgb(255 253 246 / 94%);
+  box-shadow: 12px 14px 0 var(--orange);
+}
+
+.card-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+h2 {
+  margin: 0;
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+}
+
+.roster-count {
+  flex: 0 0 auto;
+  padding: 8px 13px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: var(--yellow);
+  font-weight: 900;
+}
+
+.card-description {
+  margin: 14px 0 28px;
+  color: var(--muted-ink);
+  line-height: 1.65;
+}
+
+.option-list {
+  display: grid;
+  gap: 14px;
+}
+
+.option-row {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr) 48px;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border: 2px solid #d7b396;
+  border-radius: 20px 16px 22px 17px;
+  background: #fff9eb;
+  transition: border-color 160ms ease, transform 160ms ease;
+}
+
+.option-row:focus-within {
+  border-color: var(--orange-dark);
+  transform: translateX(3px);
+}
+
+.option-label {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-weight: 850;
+}
+
+.option-number {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 0.78rem;
+}
+
+.option-input {
+  width: 100%;
+  min-width: 0;
+  padding: 13px 15px;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  background: #fff;
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1px #e6cab3;
+}
+
+.option-input::placeholder {
+  color: #aa806b;
+}
+
+.remove-option-button {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  background: #fff;
+  font-size: 1.6rem;
+  font-weight: 500;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 150ms ease, transform 150ms ease;
+}
+
+.remove-option-button:not(:disabled):hover {
+  background: #ffd6c5;
+  transform: rotate(7deg) scale(1.04);
+}
+
+.remove-option-button:disabled {
+  border-color: #ceb5a5;
+  color: #bda394;
+  cursor: not-allowed;
+}
+
+.add-option-button {
+  width: 100%;
+  margin-top: 16px;
+  padding: 14px 18px;
+  border: 2px dashed var(--ink);
+  border-radius: 16px;
+  background: transparent;
+  font-weight: 900;
+  cursor: pointer;
+  transition: background 150ms ease, transform 150ms ease;
+}
+
+.add-option-button:not(:disabled):hover {
+  background: #fff0c1;
+  transform: translateY(-2px);
+}
+
+.add-option-button:disabled {
+  border-style: solid;
+  border-color: #d5bca8;
+  color: #9e806e;
+  cursor: not-allowed;
+}
+
+.stage-note {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 2px solid #efd8c2;
+  color: var(--muted-ink);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.stage-note-label {
+  flex: 0 0 auto;
+  padding: 5px 10px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: #ffc8ae;
+  color: var(--ink);
+  font-size: 0.76rem;
+  font-weight: 900;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (max-width: 620px) {
+  .app-shell {
+    padding: 34px 16px 64px;
   }
 
-  .scaffold-card {
-    padding: 32px 24px;
-    border-radius: 26px 20px 30px 22px;
-    box-shadow: 7px 8px 0 #ef8e4d;
+  .hero {
+    align-items: center;
+    margin-bottom: 24px;
+  }
+
+  .meet-stamp {
+    width: 86px;
+    height: 86px;
+    box-shadow: 5px 6px 0 var(--orange);
+  }
+
+  .meet-stamp-number {
+    font-size: 1.35rem;
+  }
+
+  .signup-card {
+    padding: 26px 20px;
+    border-radius: 27px 21px 31px 23px;
+    box-shadow: 8px 9px 0 var(--orange);
+  }
+
+  .option-row {
+    grid-template-columns: minmax(0, 1fr) 44px;
+    gap: 9px;
+  }
+
+  .option-label {
+    grid-column: 1 / -1;
+  }
+
+  .remove-option-button {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+@media (max-width: 390px) {
+  .hero {
+    align-items: start;
+    gap: 12px;
+  }
+
+  h1 {
+    font-size: 3rem;
+  }
+
+  .hero-intro {
+    margin-top: 12px;
+  }
+
+  .meet-stamp {
+    width: 74px;
+    height: 74px;
+  }
+
+  .meet-stamp-label {
+    margin-top: 3px;
+    font-size: 0.72rem;
+  }
+
+  .card-heading {
+    align-items: start;
+  }
+
+  .stage-note {
+    align-items: start;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .scaffold-card {
-    transform: none;
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
   }
 }
