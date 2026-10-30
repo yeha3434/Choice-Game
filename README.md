@@ -26,6 +26,10 @@ npm run check
 
 端到端测试默认使用本机已安装的 Microsoft Edge，不会额外下载浏览器内核。
 
+## GitHub Pages 发布
+
+将仓库推送到 GitHub，打开仓库 Settings → Pages，在 Build and deployment 中将 Source 设为 GitHub Actions。推送到 `main` 后，`.github/workflows/deploy.yml` 会自动构建并发布 `dist`。使用相对资源路径，可部署在 GitHub Pages 项目子路径下。
+
 ## 项目资料
 
 - 需求与决定：`docs/decisions-entangled-sports.md`
