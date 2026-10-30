@@ -892,6 +892,63 @@ h2 {
   animation: crown-wobble 500ms ease-in-out infinite alternate;
 }
 
+.event-bubble {
+  position: absolute;
+  z-index: 7;
+  top: 1px;
+  left: 60%;
+  padding: 3px 6px;
+  border: 2px solid var(--ink);
+  border-radius: 9px;
+  background: #fffdf6;
+  font-size: 0.66rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.event-bubble[hidden], .event-obstacle[hidden] { display: none; }
+
+.event-obstacle {
+  position: absolute;
+  z-index: 2;
+  right: -20px;
+  bottom: 8px;
+  width: 30px;
+}
+
+.event-obstacle svg { display: block; width: 100%; }
+
+.race-lane[data-event="boost"] .lane-character-art {
+  animation: event-boost 1.4s ease-in-out;
+  filter: drop-shadow(-9px 2px 0 rgb(255 241 190 / 65%));
+}
+
+.race-lane[data-event="fall"] .lane-character-art {
+  animation: event-fall 1.4s ease-in-out;
+}
+
+.race-lane[data-event="tired"] .lane-character-art {
+  animation: event-tired 1.4s ease-in-out;
+}
+
+@keyframes event-boost {
+  0% { transform: translateY(0) scaleY(1); }
+  25% { transform: translateY(8px) scaleY(.78); }
+  65% { transform: translate(7px, -7px) rotate(14deg); }
+  100% { transform: none; }
+}
+
+@keyframes event-fall {
+  0% { transform: rotate(0); }
+  35%, 55% { transform: translateY(14px) rotate(85deg); }
+  100% { transform: none; }
+}
+
+@keyframes event-tired {
+  0%, 100% { transform: none; }
+  50% { transform: translateY(8px) rotate(20deg) scaleY(.9); }
+}
+
 @keyframes runner-bounce {
   to { transform: translateY(-5px) rotate(4deg); }
 }
@@ -1266,6 +1323,7 @@ h2 {
   }
 
   .race-stadium[data-state="running"] .lane-character-art,
+  .race-lane[data-event] .lane-character-art,
   .leader-crown {
     animation: none;
   }

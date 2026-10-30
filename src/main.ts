@@ -1,5 +1,6 @@
 import './style.css'
 import { createRaceSimulation, type RacerTimeline } from './race-engine'
+import { createRaceEvents, eventTime } from './race-events'
 import {
   CHARACTERS,
   createCharacterAssignments,
@@ -536,6 +537,14 @@ function renderRaceLanes(): void {
     crown.hidden = true
     crown.setAttribute('aria-label', '当前领先')
 
+    const eventBubble = document.createElement('span')
+    eventBubble.className = 'event-bubble'
+    eventBubble.hidden = true
+    const obstacle = document.createElement('span')
+    obstacle.className = 'event-obstacle'
+    obstacle.hidden = true
+    obstacle.setAttribute('aria-hidden', 'true')
+
     const artwork = document.createElement('div')
     artwork.className = 'lane-character-art'
     artwork.innerHTML = character.svg
@@ -543,7 +552,7 @@ function renderRaceLanes(): void {
     const characterName = document.createElement('span')
     characterName.className = 'lane-character-name'
     characterName.textContent = character.name
-    runner.append(crown, artwork, characterName)
+    runner.append(crown, eventBubble, obstacle, artwork, characterName)
 
     const distance = document.createElement('div')
     distance.className = 'lane-distance'
@@ -629,6 +638,7 @@ raceGo.addEventListener('click', () => {
   setEntryLocked(true)
   renderRaceLanes()
   const simulation = createRaceSimulation(selectedRaceOptions.map(({ id }) => id))
+  const events = createRaceEvents(selectedRaceOptions.map(({ id }) => id))
   const startedAt = performance.now()
   raceStadium.dataset.state = 'countdown'
 
@@ -646,9 +656,28 @@ raceGo.addEventListener('click', () => {
     let leaderProgress = -1
     let leaderFinishTime = Infinity
     for (const racer of simulation.racers) {
-      const progress = progressAt(racer, raceElapsed)
+      const event = events.find((item) => item.optionId === racer.optionId && raceElapsed >= item.startMs && raceElapsed < item.endMs)
+      const progress = progressAt(racer, event ? eventTime(raceElapsed, event) : raceElapsed)
       const lane = raceLanes.querySelector<HTMLElement>(`[data-option-id="${racer.optionId}"]`)
       lane?.style.setProperty('--progress', String(progress))
+      if (lane) {
+        const eventChanged = lane.dataset.event !== (event?.type ?? '')
+        lane.dataset.event = event?.type ?? ''
+        const bubble = lane.querySelector<HTMLElement>('.event-bubble')
+        const obstacle = lane.querySelector<HTMLElement>('.event-obstacle')
+        if (bubble) {
+          bubble.hidden = !event
+          bubble.textContent = event?.type === 'boost' ? '借点风！' : event?.type === 'fall' ? '哎呀！' : '让我缓缓…'
+        }
+        if (obstacle && eventChanged) {
+          obstacle.hidden = !event || event.type === 'tired'
+          obstacle.innerHTML = event?.type === 'boost'
+            ? '<svg viewBox="0 0 40 40"><circle cx="20" cy="19" r="16" fill="#c3e7e6" stroke="#432519" stroke-width="3"/><path d="M20 19 Q10 8 20 6 Q27 8 20 19 Q32 9 33 19 Q31 27 20 19 Q28 31 18 32 Q11 29 20 19Z" fill="#66b8b2" stroke="#432519" stroke-width="2"/><path d="M20 35v4" stroke="#432519" stroke-width="3"/></svg>'
+            : event?.obstacle === 'puddle'
+              ? '<svg viewBox="0 0 40 28"><path d="M3 20 Q8 12 15 16 Q21 8 26 16 Q34 14 37 21 Q31 27 20 24 Q9 27 3 20Z" fill="#8fd6e0" stroke="#432519" stroke-width="3"/></svg>'
+              : '<svg viewBox="0 0 40 28"><path d="M4 23 Q14 21 17 9 L20 3 L23 10 Q27 19 36 22 Q30 27 23 23 L20 17 Q17 24 10 25Z" fill="#ffe169" stroke="#432519" stroke-width="3" stroke-linejoin="round"/></svg>'
+        }
+      }
       if (progress > leaderProgress || (progress === leaderProgress && racer.finishTimeMs < leaderFinishTime)) {
         leaderProgress = progress
         leaderId = racer.optionId
