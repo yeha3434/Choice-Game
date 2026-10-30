@@ -88,11 +88,84 @@ app.innerHTML = `
         <div id="character-grid" class="character-grid"></div>
       </section>
 
+      <section id="race-stadium" class="race-stadium" aria-labelledby="stadium-title" hidden>
+        <div class="stadium-heading">
+          <div>
+            <p class="stadium-kicker">社区运动场 · 赛前预览</p>
+            <h3 id="stadium-title">跑道已经铺好</h3>
+          </div>
+          <span class="fairness-badge">每位选手机会相同</span>
+        </div>
+
+        <div class="stadium-scene">
+          <div class="start-banner"><span>各位选手，请就位</span></div>
+
+          <div class="spectator-row" aria-label="场边观众">
+            <div class="spectator" data-testid="spectator-bird" role="img" aria-label="把加油牌举反的小鸟">
+              <svg viewBox="0 0 110 82" aria-hidden="true">
+                <path d="M21 64 Q27 43 45 46 Q63 48 67 66" fill="#ffe169" stroke="#432519" stroke-width="4" />
+                <circle cx="37" cy="51" r="3" fill="#432519" />
+                <path d="M46 55 L57 59 L47 63 Z" fill="#ef7842" stroke="#432519" stroke-width="2" />
+                <path d="M30 66 L25 78 M52 66 L58 78" stroke="#432519" stroke-linecap="round" stroke-width="4" />
+                <path d="M15 45 L30 55 M67 48 L79 38" stroke="#432519" stroke-linecap="round" stroke-width="4" />
+                <g transform="rotate(180 75 24)">
+                  <rect x="50" y="8" width="50" height="30" rx="4" fill="#fffdf6" stroke="#432519" stroke-width="3" />
+                  <text x="75" y="28" fill="#bc472f" font-size="13" font-weight="900" text-anchor="middle">加油</text>
+                </g>
+              </svg>
+              <span>牌子好像反了</span>
+            </div>
+
+            <div class="spectator" data-testid="spectator-cat" role="img" aria-label="专心吃零食的猫">
+              <svg viewBox="0 0 110 82" aria-hidden="true">
+                <path d="M29 33 L35 17 L47 31 Q59 25 70 31 L82 17 L85 40 Q86 62 59 65 Q31 63 29 42 Z" fill="#e7a35c" stroke="#432519" stroke-linejoin="round" stroke-width="4" />
+                <circle cx="46" cy="42" r="3" fill="#432519" />
+                <circle cx="69" cy="42" r="3" fill="#432519" />
+                <path d="M55 49 L60 49 L58 54 Z" fill="#ef7842" stroke="#432519" stroke-width="2" />
+                <path d="M25 58 Q11 51 14 39" fill="none" stroke="#432519" stroke-linecap="round" stroke-width="5" />
+                <path d="M45 65 L42 78 M71 64 L76 77" stroke="#432519" stroke-linecap="round" stroke-width="4" />
+                <path d="M87 49 L101 46 L98 70 L84 68 Z" fill="#ef6548" stroke="#432519" stroke-width="3" />
+                <circle cx="92" cy="55" r="3" fill="#ffe169" />
+              </svg>
+              <span>比赛哪有零食香</span>
+            </div>
+
+            <div class="spectator" data-testid="spectator-referee" role="img" aria-label="反应慢半拍的裁判">
+              <svg viewBox="0 0 110 82" aria-hidden="true">
+                <circle cx="54" cy="27" r="15" fill="#f3bb87" stroke="#432519" stroke-width="4" />
+                <path d="M37 25 Q53 4 72 22 L69 27 L39 27 Z" fill="#5d4eb5" stroke="#432519" stroke-linejoin="round" stroke-width="4" />
+                <path d="M42 46 Q54 39 68 46 L75 76 L34 76 Z" fill="#fffdf6" stroke="#432519" stroke-linejoin="round" stroke-width="4" />
+                <path d="M42 31 Q48 35 53 31 M59 31 Q64 35 69 31" fill="none" stroke="#432519" stroke-linecap="round" stroke-width="3" />
+                <circle cx="84" cy="51" r="10" fill="#ffe169" stroke="#432519" stroke-width="3" />
+                <path d="M84 51 L84 45 M84 51 L89 54" stroke="#432519" stroke-linecap="round" stroke-width="2" />
+                <path d="M70 51 L82 50" stroke="#432519" stroke-linecap="round" stroke-width="4" />
+              </svg>
+              <span>哨子还没找着</span>
+            </div>
+          </div>
+
+          <div class="track-wrap">
+            <div id="race-lanes" class="race-lanes"></div>
+            <div class="finish-line" aria-hidden="true"></div>
+            <div class="finish-ribbon" aria-label="终点彩带">终点</div>
+          </div>
+
+          <div class="stadium-footer">
+            <p>暖橘跑道已就位，白线由社区志愿者自由发挥。</p>
+            <div class="cardboard-podium" data-testid="cardboard-podium" role="img" aria-label="纸箱领奖台">
+              <div class="podium-box podium-box--second"><span>2</span></div>
+              <div class="podium-box podium-box--first"><span>1</span></div>
+              <div class="podium-box podium-box--third"><span>3</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <p id="roster-status" class="visually-hidden" aria-live="polite"></p>
 
       <aside class="stage-note" aria-label="当前开发阶段">
-        <span class="stage-note-label">阶段 3</span>
-        <span>角色只改变造型和动作，不会影响任何选项的获胜机会。</span>
+        <span class="stage-note-label">阶段 5</span>
+        <span>先让选手在静态跑道上就位；倒计时和正式跑动将在下一阶段加入。</span>
       </aside>
     </section>
   </main>
@@ -110,6 +183,8 @@ const characterSelection = getRequiredElement<HTMLElement>('character-selection'
 const characterSummary = getRequiredElement<HTMLParagraphElement>('character-summary')
 const characterGrid = getRequiredElement<HTMLDivElement>('character-grid')
 const randomizeCharactersButton = getRequiredElement<HTMLButtonElement>('randomize-characters')
+const raceStadium = getRequiredElement<HTMLElement>('race-stadium')
+const raceLanes = getRequiredElement<HTMLDivElement>('race-lanes')
 
 let nextOptionId = MIN_RACE_OPTION_COUNT + 1
 let options: RawRaceOption[] = Array.from({ length: MIN_RACE_OPTION_COUNT }, (_, index) => ({
@@ -132,6 +207,8 @@ function getRequiredElement<T extends HTMLElement>(id: string): T {
 function clearCharacterSelection(): void {
   characterSelection.hidden = true
   characterGrid.replaceChildren()
+  raceStadium.hidden = true
+  raceLanes.replaceChildren()
   selectedRaceOptions = []
   characterAssignments = []
 }
@@ -391,6 +468,7 @@ function renderCharacterCards(focusOptionId?: number): void {
   })
 
   characterGrid.replaceChildren(fragment)
+  renderRaceLanes()
 
   if (focusOptionId !== undefined) {
     characterGrid
@@ -401,6 +479,67 @@ function renderCharacterCards(focusOptionId?: number): void {
   }
 }
 
+function renderRaceLanes(): void {
+  const fragment = document.createDocumentFragment()
+
+  selectedRaceOptions.forEach((option, index) => {
+    const assignment = characterAssignments.find(({ optionId }) => optionId === option.id)
+
+    if (!assignment) {
+      throw new Error(`找不到选手 ${option.id} 的跑道角色`)
+    }
+
+    const character = getCharacter(assignment.characterId)
+    const lane = document.createElement('div')
+    lane.className = 'race-lane'
+    lane.dataset.testid = 'race-lane'
+    lane.dataset.optionId = String(option.id)
+    lane.dataset.characterId = character.id
+    lane.setAttribute('role', 'group')
+    lane.setAttribute('aria-label', `第 ${index + 1} 道，${option.name}，角色${character.name}`)
+
+    const laneInfo = document.createElement('div')
+    laneInfo.className = 'lane-info'
+
+    const laneNumber = document.createElement('span')
+    laneNumber.className = 'lane-number'
+    laneNumber.textContent = `第 ${index + 1} 道`
+
+    const optionName = document.createElement('span')
+    optionName.className = 'lane-option-name'
+    optionName.dataset.testid = 'lane-option-name'
+    optionName.title = option.name
+    optionName.textContent = option.name
+    laneInfo.append(laneNumber, optionName)
+
+    const runner = document.createElement('div')
+    runner.className = 'lane-runner'
+
+    const artwork = document.createElement('div')
+    artwork.className = 'lane-character-art'
+    artwork.innerHTML = character.svg
+
+    const characterName = document.createElement('span')
+    characterName.className = 'lane-character-name'
+    characterName.textContent = character.name
+    runner.append(artwork, characterName)
+
+    const distance = document.createElement('div')
+    distance.className = 'lane-distance'
+    distance.setAttribute('aria-hidden', 'true')
+    distance.append(
+      document.createElement('span'),
+      document.createElement('span'),
+      document.createElement('span'),
+    )
+
+    lane.append(laneInfo, runner, distance)
+    fragment.append(lane)
+  })
+
+  raceLanes.replaceChildren(fragment)
+}
+
 function prepareCharacterSelection(raceOptions: readonly RaceOption[]): void {
   selectedRaceOptions = raceOptions.map((option) => ({ ...option }))
   characterAssignments = createCharacterAssignments(
@@ -409,6 +548,7 @@ function prepareCharacterSelection(raceOptions: readonly RaceOption[]): void {
   characterSummary.textContent = `${selectedRaceOptions.length} 名选手已随机分配不重复角色；角色不会影响获胜机会。`
   renderCharacterCards()
   characterSelection.hidden = false
+  raceStadium.hidden = false
   characterSelection.focus()
 }
 

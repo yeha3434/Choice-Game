@@ -637,6 +637,339 @@ h2 {
   font-weight: 750;
 }
 
+.race-stadium {
+  margin-top: 30px;
+  padding: 22px;
+  border: 3px solid var(--ink);
+  border-radius: 22px 29px 20px 26px;
+  background: #fff2d4;
+  box-shadow: 8px 9px 0 #cf5938;
+}
+
+.race-stadium[hidden] {
+  display: none;
+}
+
+.stadium-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.stadium-kicker {
+  margin: 0 0 4px;
+  color: var(--orange-dark);
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+}
+
+.race-stadium h3 {
+  margin: 0;
+  font-size: clamp(1.5rem, 3.4vw, 2.2rem);
+  letter-spacing: -0.04em;
+}
+
+.fairness-badge {
+  flex: 0 0 auto;
+  padding: 7px 11px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: #bce2c0;
+  font-size: 0.74rem;
+  font-weight: 900;
+  transform: rotate(1deg);
+}
+
+.stadium-scene {
+  position: relative;
+  overflow: hidden;
+  padding: 18px 14px 14px;
+  border: 2px solid #b14c31;
+  border-radius: 20px 15px 22px 17px;
+  background:
+    radial-gradient(circle at 16% 2%, rgb(255 225 105 / 55%), transparent 23%),
+    linear-gradient(#dff1e5 0 22%, #f8dfb8 22% 100%);
+}
+
+.start-banner {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  margin: -9px auto 4px;
+}
+
+.start-banner span {
+  display: inline-block;
+  padding: 8px 18px;
+  border: 2px solid var(--ink);
+  border-radius: 8px 13px 7px 11px;
+  background: var(--yellow);
+  box-shadow: 4px 4px 0 var(--orange);
+  font-size: 0.86rem;
+  font-weight: 950;
+  transform: rotate(-1deg);
+}
+
+.start-banner::before,
+.start-banner::after {
+  width: min(18%, 90px);
+  height: 2px;
+  align-self: center;
+  background: var(--ink);
+  content: "";
+}
+
+.spectator-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: end;
+  gap: 10px;
+  min-height: 94px;
+  margin: 3px 0 8px;
+  padding-inline: 10px;
+}
+
+.spectator {
+  display: grid;
+  min-width: 0;
+  justify-items: center;
+  color: #6b4534;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+.spectator:nth-child(2) {
+  transform: translateY(6px) rotate(1deg);
+}
+
+.spectator:nth-child(3) {
+  transform: translateY(3px) rotate(-1deg);
+}
+
+.spectator svg {
+  display: block;
+  width: min(100%, 108px);
+  height: 72px;
+}
+
+.track-wrap {
+  position: relative;
+  overflow: hidden;
+  border: 3px solid var(--ink);
+  border-radius: 15px 10px 18px 12px;
+  background: var(--track);
+  box-shadow: 5px 6px 0 rgb(91 43 28 / 30%);
+  transform: rotate(-0.2deg);
+}
+
+.race-lanes {
+  display: grid;
+}
+
+.race-lane {
+  --line-tilt: -0.35deg;
+  position: relative;
+  display: grid;
+  min-width: 0;
+  min-height: 128px;
+  grid-template-columns: minmax(122px, 0.9fr) 98px minmax(80px, 1.5fr);
+  align-items: end;
+  gap: 8px;
+  overflow: hidden;
+  padding: 10px 42px 8px 12px;
+  background:
+    linear-gradient(90deg, rgb(255 255 255 / 7%), transparent 40%),
+    linear-gradient(180deg, #ed8557, #df7045);
+}
+
+.race-lane:nth-child(even) {
+  --line-tilt: 0.45deg;
+  background:
+    linear-gradient(90deg, rgb(255 255 255 / 5%), transparent 45%),
+    linear-gradient(180deg, #e67b4f, #d96840);
+}
+
+.race-lane::after {
+  position: absolute;
+  z-index: 4;
+  right: -6px;
+  bottom: -2px;
+  left: -6px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgb(255 253 246 / 92%);
+  content: "";
+  transform: rotate(var(--line-tilt));
+}
+
+.lane-info {
+  align-self: start;
+  min-width: 0;
+  padding-top: 3px;
+}
+
+.lane-number {
+  display: block;
+  margin-bottom: 5px;
+  color: #fff4dc;
+  font-size: 0.67rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.lane-option-name {
+  display: -webkit-box;
+  min-width: 0;
+  max-height: 2.8em;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  color: #fffdf6;
+  font-size: 0.95rem;
+  font-weight: 950;
+  line-height: 1.35;
+  text-shadow: 1px 2px 0 #8c3f2b;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.lane-runner {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  min-width: 0;
+  justify-items: center;
+  align-self: end;
+}
+
+.lane-character-art {
+  width: 86px;
+  height: 94px;
+}
+
+.lane-character-art .character-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.lane-character-name {
+  max-width: 100%;
+  margin-top: -5px;
+  padding: 3px 7px;
+  overflow: hidden;
+  border: 1px solid rgb(67 37 25 / 50%);
+  border-radius: 999px;
+  background: rgb(255 253 246 / 88%);
+  font-size: 0.62rem;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lane-distance {
+  display: flex;
+  min-width: 0;
+  height: 62%;
+  align-items: center;
+  justify-content: space-around;
+  align-self: center;
+  opacity: 0.5;
+}
+
+.lane-distance span {
+  width: 4px;
+  height: 22px;
+  border-radius: 999px;
+  background: rgb(255 253 246 / 68%);
+  transform: rotate(7deg);
+}
+
+.lane-distance span:nth-child(2) {
+  height: 13px;
+  transform: rotate(-6deg);
+}
+
+.finish-line {
+  position: absolute;
+  z-index: 5;
+  top: 0;
+  right: 18px;
+  bottom: 0;
+  width: 14px;
+  border-inline: 2px solid var(--ink);
+  background: conic-gradient(#fff 0 25%, #432519 0 50%, #fff 0 75%, #432519 0) 0 0 / 12px 12px;
+  transform: rotate(0.6deg);
+}
+
+.finish-ribbon {
+  position: absolute;
+  z-index: 6;
+  top: 8px;
+  right: 2px;
+  padding: 5px 4px;
+  border: 2px solid var(--ink);
+  border-radius: 7px;
+  background: var(--yellow);
+  font-size: 0.62rem;
+  font-weight: 950;
+  writing-mode: vertical-rl;
+}
+
+.stadium-footer {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 18px;
+  margin-top: 14px;
+}
+
+.stadium-footer > p {
+  max-width: 36ch;
+  margin: 0;
+  color: #82533c;
+  font-size: 0.76rem;
+  line-height: 1.5;
+}
+
+.cardboard-podium {
+  display: flex;
+  flex: 0 0 auto;
+  height: 68px;
+  align-items: end;
+  filter: drop-shadow(3px 4px 0 rgb(67 37 25 / 18%));
+}
+
+.podium-box {
+  display: grid;
+  width: 45px;
+  place-items: center;
+  border: 2px solid var(--ink);
+  background:
+    linear-gradient(15deg, transparent 48%, rgb(111 67 41 / 16%) 49% 51%, transparent 52%),
+    #d79a59;
+  color: #fff8e8;
+  font-weight: 950;
+  text-shadow: 1px 2px 0 #85532f;
+}
+
+.podium-box--first {
+  height: 66px;
+  background-color: #e4aa61;
+}
+
+.podium-box--second {
+  height: 49px;
+}
+
+.podium-box--third {
+  height: 38px;
+  background-color: #c98b4e;
+}
+
 .stage-note {
   display: flex;
   align-items: center;
@@ -723,6 +1056,68 @@ h2 {
   .character-card-body {
     grid-template-columns: 108px minmax(0, 1fr);
   }
+
+  .race-stadium {
+    padding: 16px 12px;
+  }
+
+  .stadium-heading {
+    align-items: start;
+  }
+
+  .stadium-scene {
+    padding: 16px 8px 12px;
+  }
+
+  .spectator-row {
+    gap: 3px;
+    min-height: 84px;
+    padding-inline: 0;
+  }
+
+  .spectator svg {
+    height: 62px;
+  }
+
+  .spectator span {
+    font-size: 0.62rem;
+  }
+
+  .race-lane {
+    min-height: 112px;
+    grid-template-columns: minmax(78px, 0.95fr) 65px minmax(28px, 0.55fr);
+    gap: 5px;
+    padding: 8px 30px 7px 8px;
+  }
+
+  .lane-option-name {
+    font-size: 0.8rem;
+  }
+
+  .lane-character-art {
+    width: 62px;
+    height: 72px;
+  }
+
+  .finish-line {
+    right: 10px;
+    width: 11px;
+    background-size: 9px 9px;
+  }
+
+  .finish-ribbon {
+    right: -2px;
+    font-size: 0.55rem;
+  }
+
+  .stadium-footer {
+    align-items: center;
+    gap: 10px;
+  }
+
+  .podium-box {
+    width: 34px;
+  }
 }
 
 @media (max-width: 390px) {
@@ -773,6 +1168,28 @@ h2 {
 
   .character-tagline {
     min-height: 0;
+  }
+
+  .fairness-badge {
+    max-width: 9em;
+    padding: 6px 8px;
+    font-size: 0.66rem;
+    text-align: center;
+  }
+
+  .start-banner span {
+    padding: 7px 10px;
+    font-size: 0.75rem;
+  }
+
+  .start-banner::before,
+  .start-banner::after {
+    width: 11%;
+  }
+
+  .stadium-footer > p {
+    max-width: 18ch;
+    font-size: 0.68rem;
   }
 
   .stage-note {
